@@ -369,6 +369,54 @@ int supprimerRayon(magasin *magasin, char *nomdurayon)
     
 }
 
+void rechercheProduits(magasin *magasin, float prix_min, float prix_max)
+{
+    struct Rayon *test = malloc(sizeof(struct Produit));
+    struct Produit *produit = malloc(sizeof(struct Produit));
+    struct Produit *produitmin = malloc(sizeof(struct Produit));
+    struct Produit *produitmax = malloc(sizeof(struct Produit));
+    finproduit *dernier = malloc(sizeof(finproduit));
+    struct Produit tab[100];
+    int i=0;;
+    
+    test = magasin -> premier;
+    
+    while (test != NULL)
+    {
+        produit = test -> premier;
+    
+        while (produit != NULL)
+        {
+            dernier -> dernierproduit = produit;
+            produit = produit -> suivant;
+        }
+    
+        produit = magasin -> premier -> premier;
+        while (prix_min <= produit -> prix)
+        {
+            produitmin = produit;
+            produit = produit->suivant;
+        }
+    
+        produit = dernier -> dernierproduit;
+        while (prix_max >= produit -> prix)
+        {
+            produitmax = produit;
+            produit = produit->prec;
+        }
+    
+        while(produitmin != produitmax)
+        {
+            tab[i]=*produitmin;
+            produitmin = produitmin -> suivant;
+            i++;
+        }
+        test = test -> suivant;
+        }
+    
+    
+}
+
 /*1. Créer un magasin
  2. Ajouter un rayon au magasin
  3. Ajouter un produit dans un rayon
