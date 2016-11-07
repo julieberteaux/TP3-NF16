@@ -1,8 +1,4 @@
-# TP3-NF16
-Magasin avec Rayons et Produits (listes chainées)
-
-
- #include <stdio.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -87,9 +83,7 @@ int ajouterRayon(magasin *magasin, rayon *rayon){
     }
     
     
-    
-    strcpy(nouveau->nom_rayon,rayon -> nom_rayon); //nouveau = rayon ajouté
-    nouveau->nombre_produit = rayon->nombre_produit;
+    nouveau=rayon;
     
     test = magasin -> premier;
     
@@ -179,7 +173,7 @@ int ajouterProduit(rayon *rayon, produit *produit)
     else
     {
         Pactuel = rayon -> premier;
-        while ( (Pactuel !=NULL) && ((nouveau -> prix) >= (Pactuel -> prix)) )
+        while ( (Pactuel !=NULL) && ((nouveau->prix) >= (Pactuel->prix)) )
         {
             temp = Pactuel;
             Pactuel = Pactuel->suivant;
@@ -197,7 +191,7 @@ int ajouterProduit(rayon *rayon, produit *produit)
     test = rayon -> premier;
     while (test!=NULL)
     {
-        if (test == produit)
+        if (strcmp ( (test->marque) , (produit->marque)) == 0)
             return 1;
         test = test->suivant;
     }
@@ -268,7 +262,13 @@ int supprimerProduit(rayon *rayon, char* marque_produit)
 {
     if (rayon == NULL)                                              // si rayon n'existe pas erreur
     {
-        printf("ce rayon n'existe pas");
+        printf("ce rayon n'existe pas\n");
+        return 0;
+    }
+    
+    if (rayon->premier == NULL)                                              // si rayon n'existe pas erreur
+    {
+        printf("ce rayon est vide n");
         return 0;
     }
     
@@ -281,17 +281,26 @@ int supprimerProduit(rayon *rayon, char* marque_produit)
         return 0;
     }
     
-    actuel = rayon->premier;                                        // actuel prend le premier produit du rayon
+     actuel = rayon->premier;                                        // actuel prend le premier produit du rayon
     
-    while((actuel->marque != marque_produit) || (actuel == NULL))   //on parcours le rayon tant que la marque du produit analysé est differente de la marque rentrée en paramètre ou que le produit est vide
+    if(strcmp( ( actuel->marque) , (marque_produit) ) == 0)
+       {
+           rayon->premier = actuel->suivant;
+           free(actuel);
+       }
+    
+   
+       else {
+    while((strcmp( (actuel->marque) , (marque_produit) ) != 0 ) || (actuel == NULL))   //on parcours le rayon tant que la marque du produit analysé est differente de la marque rentrée en paramètre ou que le produit est vide
     {
+        prec=actuel;                                                // l'ancien actuel devient le precedent
         actuel=actuel->suivant;                                     //on passe au produit suivant du rayon
-        prec->suivant=actuel;                                       // l'ancien actuel devient le precedent
+        
     }
     
     if (actuel==NULL)                                               //si on sort du while en fin de rayon , c'est un echec on renvoi 0
     {
-        printf("le produit n'est pas dans ce rayon");
+        printf("le produit n'est pas dans ce rayon\n");
         return 0;
     }
     
@@ -300,13 +309,13 @@ int supprimerProduit(rayon *rayon, char* marque_produit)
         prec->suivant=actuel->suivant;                              //pour supprimer l'actuel on fait pointer le suivant du precedent sur le suivant de l'actuel.
         free (actuel);                                              //on libère la mémoire allouer au pointeur actuel
     }
-    
+       }
     test = rayon-> premier;                                         //test repart au debut du rayon
     while (test!=NULL)                                              //on passe tout le rayon en revue pour verifier que le produit est bien supprimé
     {
-        if (test->marque == marque_produit )
+        if (strcmp((test->marque) , (marque_produit)) == 0 )
         {
-            printf("le produit n'a pas été supprimé");
+            printf("le produit n'a pas été supprimé\n");
             return 0;
         }
         test = test->suivant;
@@ -318,14 +327,14 @@ int supprimerProduit(rayon *rayon, char* marque_produit)
 
 int supprimerRayon(magasin *magasin, char *nomdurayon)
 {
-    if (magasin == NULL)                                              // si rayon n'existe pas erreur
+    if (magasin == NULL)                                              // si magasin n'existe pas erreur
     {
-        printf("ce magasin n'existe pas");
+        printf("ce magasin n'existe pas\n");
         return 0;
     }
     
-    struct Rayon *actuel = malloc(sizeof(struct Rayon));        // creation d'un pointeur sur le produit en cours d'analyse
-    struct Rayon *prec = malloc(sizeof(struct Rayon));          //creation d'un pointeur sur le produit précedent le produit actuel
+    struct Rayon *actuel = malloc(sizeof(struct Rayon));        // creation d'un pointeur sur le rayon en cours d'analyse
+    struct Rayon *prec = malloc(sizeof(struct Rayon));          //creation d'un pointeur sur le rayon précedent le produit actuel
     struct Rayon *test = malloc(sizeof(struct Rayon));
     
     if (actuel == NULL)
@@ -333,86 +342,70 @@ int supprimerRayon(magasin *magasin, char *nomdurayon)
         return 0;
     }
     
-    actuel = magasin->premier;                                      // actuel prend le premier produit du rayon
-    prec = magasin->premier;
+    actuel = magasin->premier;                                      // actuel prend le premier rayon
     
-    while((actuel->nom_rayon != nomdurayon) || (actuel == NULL))   //on parcours le rayon tant que la marque du produit analysé est differente de la marque rentrée en paramètre ou que le produit est vide
+    if(strcmp( ( actuel->nom_rayon) , (nomdurayon) ) == 0)
     {
-        actuel=actuel->suivant;                                     //on passe au produit suivant du rayon
-        prec->suivant=actuel;                                       // l'ancien actuel devient le precedent
+        magasin->premier = actuel->suivant;
+                                                                    // Avant de vider la memoire, on va supprimer les produits
+        produit* produit_actuel = actuel->premier;                  // produit_actuel pointe sur le premier produit du rayon
+        char * marque_actuel = NULL;
+                                                                   // On parcourt tous les livres et on les supprime un par un
+        while(produit_actuel != NULL){
+            marque_actuel = produit_actuel->marque;
+            
+            supprimerProduit(actuel, marque_actuel);
+            
+            produit_actuel = actuel->premier;
+        }
+        free(produit_actuel);
+        free(actuel);
+    }
+    
+    else{
+    while((strcmp( (actuel->nom_rayon) , (nomdurayon) ) != 0 ) || (actuel == NULL))   //on parcours le rayon tant que la marque du produit analysé est differente de la marque rentrée en paramètre ou que le produit est vide
+    {
+        prec=actuel;                                              // l'ancien actuel devient le precedent
+        actuel=actuel->suivant;                                   //on passe au produit suivant du rayon
+        
     }
     
     if (actuel==NULL)                                               //si on sort du while en fin de rayon , c'est un echec on renvoi 0
     {
-        printf("le rayon n'est pas dans ce magasin");
+        printf("le rayon n'est pas dans ce magasin\n");
         return 0;
     }
     
     else
     {
         prec->suivant=actuel->suivant;                              //pour supprimer l'actuel on fait pointer le suivant du precedent sur le suivant de l'actuel.
-        free (actuel);                                              //on libère la mémoire allouer au pointeur actuel
+                                                                    // Avant de vider la memoire, on va supprimer les produits
+        produit* produit_actuel = actuel->premier;                  // produit_actuel pointe sur le premier produit du rayon
+        char * marque_actuel = NULL;
+                                                                    // On parcourt tous les livres et on les supprime un par un
+        while(produit_actuel != NULL){
+            marque_actuel = produit_actuel->marque;
+            
+            supprimerProduit(actuel, marque_actuel);
+            
+            produit_actuel = actuel->premier;
+        }
+        free(produit_actuel);
+        free(actuel);                                               //on libère la mémoire allouer au pointeur actuel
+    }
     }
     
     test = magasin-> premier;                                         //test repart au debut du rayon
     while (test!=NULL)                                              //on passe tout le rayon en revue pour verifier que le produit est bien supprimé
     {
-        if (test->nom_rayon == nomdurayon )
+        if (strcmp((test->nom_rayon) , (nomdurayon)) == 0 )
         {
-            printf("le rayon n'a pas été supprimé");
+            printf("le rayon n'a pas été supprimé\n");
             return 0;
         }
         test = test->suivant;
     }
     return 1;
-    
-    
-}
-
-void rechercheProduits(magasin *magasin, float prix_min, float prix_max)
-{
-    struct Rayon *test = malloc(sizeof(struct Produit));
-    struct Produit *produit = malloc(sizeof(struct Produit));
-    struct Produit *produitmin = malloc(sizeof(struct Produit));
-    struct Produit *produitmax = malloc(sizeof(struct Produit));
-    finproduit *dernier = malloc(sizeof(finproduit));
-    struct Produit tab[100];
-    int i=0;;
-    
-    test = magasin -> premier;
-    
-    while (test != NULL)
-    {
-        produit = test -> premier;
-    
-        while (produit != NULL)
-        {
-            dernier -> dernierproduit = produit;
-            produit = produit -> suivant;
-        }
-    
-        produit = magasin -> premier -> premier;
-        while (prix_min <= produit -> prix)
-        {
-            produitmin = produit;
-            produit = produit->suivant;
-        }
-    
-        produit = dernier -> dernierproduit;
-        while (prix_max >= produit -> prix)
-        {
-            produitmax = produit;
-            produit = produit->prec;
-        }
-    
-        while(produitmin != produitmax)
-        {
-            tab[i]=*produitmin;
-            produitmin = produitmin -> suivant;
-            i++;
-        }
-        test = test -> suivant;
-        }
     
     
 }
@@ -432,7 +425,7 @@ int main(int argc, const char * argv[])
     rayon *rayon1;
     rayon *rayon2;
     rayon *rayon3;
-    rayon *rayon4;
+    
     
     produit *produit1;
     produit *produit2;
@@ -455,9 +448,6 @@ int main(int argc, const char * argv[])
     rayon3=creerRayon("Chocolat", 12);
     ajouterRayon(mag, rayon3);
     afficherMagasin(mag);
-    rayon4=creerRayon("Bonbons", 9);
-    ajouterRayon(mag, rayon4);
-    afficherMagasin(mag);
     
     produit1=creerProduit("pimousse", 0.45, 'B', 50);
     ajouterProduit(rayon2, produit1);
@@ -468,12 +458,25 @@ int main(int argc, const char * argv[])
     produit3=creerProduit("tagada", 1, 'C', 100);
     ajouterProduit(rayon2, produit3);
     afficherRayon(rayon2);
-    produit4=creerProduit("pimousse", 0.78, 'C', 10);
+    produit4=creerProduit("zouzou", 0.78, 'C', 10);
     ajouterProduit(rayon2, produit4);
     afficherRayon(rayon2);
     produit5=creerProduit("lindt", 0.58, 'A', 10);
     ajouterProduit(rayon3, produit5);
     afficherRayon(rayon3);
+    
+    afficherMagasin(mag);
+    
+    supprimerProduit(rayon2, "tagada");
+    afficherRayon(rayon2);
+    
+    supprimerRayon(mag, "Chocolat");
+    afficherMagasin(mag);
+    
+    afficherRayon(rayon3);
+    afficherRayon(rayon2);
+    
+    
     
 
 
